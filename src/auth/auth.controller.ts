@@ -68,9 +68,9 @@ export class AuthController {
     return user;
   }
 
-  @Get('users')
-  getAllUsers() {
-    const user = this.userService.findAllUsers();
+  @Get('cards/:id')
+  getAllUsers(@Param('id') id: number) {
+    const user = this.userService.findAllUsers(id);
     if (user === null) {
       throw new Error('User not found');
     }

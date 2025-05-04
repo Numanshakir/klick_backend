@@ -62,8 +62,33 @@ export class UserService {
     return { ...user };
   }
 
-  async findAllUsers() {
-    return this.prisma.user.findMany();
+  async findAllUsers(userId:number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        activity: true,
+      },
+    });
+
+    if (!user || !user.geoHash || !user.activityId) {
+      return []; // Can't match on missing data
+    }
+  
+
+    return this.prisma.user.findMany({
+      where: {
+        geoHash: user.geoHash,
+        activityId: user.activityId,
+        id: {
+          not: user.id,
+        },
+      },
+      include: {
+        activity: true, // optional: include activity of matched users
+      },
+    });
+
+
   }
 
 }

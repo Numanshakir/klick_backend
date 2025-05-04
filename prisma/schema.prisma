@@ -35,6 +35,14 @@ model User {
   activity   Activity? @relation(fields: [activityId], references: [id]) 
     reason   String?  
     tone  String?
+    latitude  Float?
+  longitude Float?
+  geoHash  String?
+  locationName String?
+
+  @@index([geoHash, activityId])
+
+    
 
 }
 
