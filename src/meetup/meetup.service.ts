@@ -26,7 +26,11 @@ where:{
   {
     toUserId:Number(userId),
   }
- ] 
+ ],
+ 
+},include:{
+  toUser:true,
+  fromUser:true
 }
     });
   }
