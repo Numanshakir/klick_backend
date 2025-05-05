@@ -39,7 +39,8 @@ model User {
   longitude Float?
   geoHash  String?
   locationName String?
-
+ sentRequests  MeetupRequest[]  @relation("RequestFromUser")
+  receivedRequests MeetupRequest[] @relation("RequestToUser")
   @@index([geoHash, activityId])
 
     
@@ -51,4 +52,23 @@ model Activity {
   name String
     image String
      users User[]
+}
+
+
+model MeetupRequest {
+  id            Int         @id @default(autoincrement())
+  fromUserId  Int
+  toUserId Int
+  status      MeetupStatus   @default(PENDING)
+   createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  fromUser     User     @relation("RequestFromUser", fields: [fromUserId], references: [id])
+  toUser       User     @relation("RequestToUser", fields: [toUserId], references: [id])
+}
+enum MeetupStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
 }

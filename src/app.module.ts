@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { DatabaseModule } from 'database/database.module';
 import { ActivityModule } from './activity/activity.module';
+import { MeetupModule } from './meetup/meetup.module';
 @Module({
   imports: [
     UserModule,
@@ -13,6 +14,7 @@ import { ActivityModule } from './activity/activity.module';
     DatabaseModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     ActivityModule,
+    MeetupModule,
   ],
   controllers: [AppController],
   providers: [AppService],
