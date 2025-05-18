@@ -1,19 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMeetupDto } from './dto/create-meetup.dto';
 import { UpdateMeetupDto } from './dto/update-meetup.dto';
-import { Prisma } from '@prisma/client';
+import { MeetupStatus, Prisma } from '@prisma/client';
 import { DatabaseService } from 'database/database.service';
+import { MeetupGateway } from './meetup.gateway';
 
 @Injectable()
 export class MeetupService {
-  constructor(private prisma:DatabaseService){}
+  constructor(private prisma:DatabaseService,    private gateway: MeetupGateway,){}
+
+
+    async updateStatus(id: number, status: MeetupStatus) {
+    const updated = await this.prisma.meetupRequest.update({
+      where: { id },
+      data: { status },
+      include: {
+        fromUser: true,
+        toUser: true,
+      },
+    });
+
+    this.gateway.emitMeetupToUsers(updated);
+    return updated;
+  }
   create(createMeetupDto: CreateMeetupDto) {
-    return this.prisma.meetupRequest.create({
+  var meetup= this.prisma.meetupRequest.create({
       data:{
       fromUserId:createMeetupDto.fromUserId,
       toUserId:createMeetupDto.toUserId
     }
     });
+     this.gateway.emitMeetupToUsers(meetup);
+     return meetup;
   }
 
   findAll(userId:number) {
@@ -40,13 +58,19 @@ where:{
   }
 
   update(id: number, updateMeetupDto: UpdateMeetupDto) {
-    return this.prisma.meetupRequest.update({
+    var meetup= this.prisma.meetupRequest.update({
       where: { id },
       data:updateMeetupDto,
     });
+     this.gateway.emitMeetupToUsers(meetup);
+     return meetup;
   }
 
   remove(id: number) {
-    return `This action removes a #${id} meetup`;
+   var meetup= this.prisma.meetupRequest.delete({
+      where: { id },
+    });
+     this.gateway.emitMeetupToUsers(meetup);
+     return meetup;
   }
 }
