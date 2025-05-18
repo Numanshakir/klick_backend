@@ -4,10 +4,16 @@ import { UpdateMeetupDto } from './dto/update-meetup.dto';
 import { MeetupStatus, Prisma } from '@prisma/client';
 import { DatabaseService } from 'database/database.service';
 import { MeetupGateway } from './meetup.gateway';
+import { QueueService } from './meetup.queue.service';
 
 @Injectable()
 export class MeetupService {
-  constructor(private prisma:DatabaseService,    private gateway: MeetupGateway,){}
+  constructor(private prisma:DatabaseService,    private gateway: MeetupGateway,
+
+
+        private readonly queueService: QueueService,
+
+  ){}
 
 
     async updateStatus(id: number, status: MeetupStatus) {
@@ -23,14 +29,15 @@ export class MeetupService {
     this.gateway.emitMeetupToUsers(updated);
     return updated;
   }
-  create(createMeetupDto: CreateMeetupDto) {
-  var meetup= this.prisma.meetupRequest.create({
+  async create(createMeetupDto: CreateMeetupDto) {
+  var meetup=await this.prisma.meetupRequest.create({
       data:{
       fromUserId:createMeetupDto.fromUserId,
       toUserId:createMeetupDto.toUserId
     }
     });
      this.gateway.emitMeetupToUsers(meetup);
+        this.queueService.scheduleStatusJob(meetup.id, 'PENDING');
      return meetup;
   }
 
@@ -57,12 +64,13 @@ where:{
     return `This action returns a #${id} meetup`;
   }
 
-  update(id: number, updateMeetupDto: UpdateMeetupDto) {
-    var meetup= this.prisma.meetupRequest.update({
+ async update(id: number, updateMeetupDto: UpdateMeetupDto) {
+    var meetup=await this.prisma.meetupRequest.update({
       where: { id },
       data:updateMeetupDto,
     });
      this.gateway.emitMeetupToUsers(meetup);
+      await this.queueService.scheduleStatusJob(meetup.id, meetup.status);
      return meetup;
   }
 

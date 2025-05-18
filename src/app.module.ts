@@ -7,6 +7,7 @@ import { PassportModule } from '@nestjs/passport';
 import { DatabaseModule } from 'database/database.module';
 import { ActivityModule } from './activity/activity.module';
 import { MeetupModule } from './meetup/meetup.module';
+import { BullModule } from '@nestjs/bullmq';
 @Module({
   imports: [
     UserModule,
@@ -15,6 +16,15 @@ import { MeetupModule } from './meetup/meetup.module';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     ActivityModule,
     MeetupModule,
+     BullModule.forRoot({
+      connection: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
+      BullModule.registerQueue({
+      name: 'meetup-status',
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
